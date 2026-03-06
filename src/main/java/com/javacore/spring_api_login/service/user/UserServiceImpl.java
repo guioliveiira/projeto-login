@@ -9,6 +9,7 @@ import com.javacore.spring_api_login.exception.custom.BusinessException;
 import com.javacore.spring_api_login.exception.custom.ResourceNotFoundException;
 import com.javacore.spring_api_login.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional(readOnly = true)
@@ -64,7 +66,7 @@ public class UserServiceImpl implements UserService {
             if (!updateRequest.password().equals(updateRequest.confirmPassword())) {
                 throw new BusinessException("As senhas não coincidem");
             }
-            user.setPassword(updateRequest.password());
+            user.setPassword(passwordEncoder.encode(updateRequest.password()));
         }
 
         return toResponse(user);
