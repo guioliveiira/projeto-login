@@ -107,6 +107,7 @@ public class UserServiceImpl implements UserService {
                 user.getPublicId(),
                 user.getName(),
                 user.getEmail(),
+                user.getRole(),
                 user.getCreatedAt(),
                 user.getUpdatedAt(),
                 user.getDeleted()
