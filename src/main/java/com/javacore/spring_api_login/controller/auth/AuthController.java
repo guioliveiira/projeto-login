@@ -5,6 +5,7 @@ import com.javacore.spring_api_login.dtos.Request.RegisterUserRequest;
 import com.javacore.spring_api_login.dtos.Response.LoginUserResponse;
 import com.javacore.spring_api_login.dtos.Response.RegisterUserResponse;
 import com.javacore.spring_api_login.service.auth.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,7 +26,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<RegisterUserResponse> register(@RequestBody RegisterUserRequest request) {
+    public ResponseEntity<RegisterUserResponse> register(@RequestBody @Valid RegisterUserRequest request) {
         return ResponseEntity.ok(authService.register(request));
     }
 }

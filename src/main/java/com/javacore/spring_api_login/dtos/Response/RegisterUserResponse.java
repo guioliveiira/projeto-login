@@ -1,5 +1,6 @@
 package com.javacore.spring_api_login.dtos.Response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.javacore.spring_api_login.entity.UserRole;
 
 import java.time.LocalDateTime;
@@ -10,7 +11,9 @@ public record RegisterUserResponse(
         String name,
         String email,
         UserRole role,
+        @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss", timezone = "America/Sao_Paulo")
         LocalDateTime createdAt,
+        @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss", timezone = "America/Sao_Paulo")
         LocalDateTime updatedAt,
         Boolean deleted
 ) {

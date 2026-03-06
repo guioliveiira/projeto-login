@@ -61,14 +61,16 @@ public class AuthServiceImpl implements AuthService {
                 .role(UserRole.USER)
                 .build();
 
+        User savedUser = userRepository.save(user);
+
         return new RegisterUserResponse(
-                user.getPublicId(),
-                user.getName(),
-                user.getEmail(),
-                user.getRole(),
-                user.getCreatedAt(),
-                user.getUpdatedAt(),
-                user.getDeleted()
+                savedUser.getPublicId(),
+                savedUser.getName(),
+                savedUser.getEmail(),
+                savedUser.getRole(),
+                savedUser.getCreatedAt(),
+                savedUser.getUpdatedAt(),
+                savedUser.getDeleted()
         );
     }
 }
