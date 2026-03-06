@@ -1,6 +1,7 @@
 package com.javacore.spring_api_login.exception.handler;
 
 import com.javacore.spring_api_login.exception.custom.BusinessException;
+import com.javacore.spring_api_login.exception.custom.InvalidCredentialsException;
 import com.javacore.spring_api_login.exception.custom.ResourceNotFoundException;
 import com.javacore.spring_api_login.exception.response.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,6 +33,13 @@ public class GlobalExceptionHandler {
             HttpServletRequest request) {
 
         return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), null, request);
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidCredentialsException(
+            InvalidCredentialsException ex,
+            HttpServletRequest request) {
+        return buildErrorResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), null, request);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

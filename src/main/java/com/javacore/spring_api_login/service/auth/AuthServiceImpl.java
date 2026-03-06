@@ -1,5 +1,6 @@
 package com.javacore.spring_api_login.service.auth;
 
+import com.javacore.spring_api_login.config.TokenConfiguration;
 import com.javacore.spring_api_login.domain.email.EmailNormalizer;
 import com.javacore.spring_api_login.domain.name.NameNormalizer;
 import com.javacore.spring_api_login.dtos.Request.LoginUserRequest;
@@ -9,8 +10,11 @@ import com.javacore.spring_api_login.dtos.Response.RegisterUserResponse;
 import com.javacore.spring_api_login.entity.User;
 import com.javacore.spring_api_login.entity.UserRole;
 import com.javacore.spring_api_login.exception.custom.BusinessException;
+import com.javacore.spring_api_login.exception.custom.InvalidCredentialsException;
 import com.javacore.spring_api_login.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,10 +24,25 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final TokenConfiguration tokenConfiguration;
 
     @Override
     public LoginUserResponse login(LoginUserRequest request) {
-        return null;
+
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.email(),
+                        request.password()
+                )
+        );
+
+        User user = userRepository.findByEmailAndDeletedFalse(request.email())
+                .orElseThrow(() -> new InvalidCredentialsException("Email ou senha incorretos"));
+
+        String token = tokenConfiguration.generateToken(user);
+
+        return new LoginUserResponse(token);
     }
 
     @Override
