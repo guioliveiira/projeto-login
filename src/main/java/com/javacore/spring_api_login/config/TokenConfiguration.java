@@ -6,6 +6,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.javacore.spring_api_login.entity.User;
 import com.javacore.spring_api_login.entity.UserRole;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,7 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Component
 public class TokenConfiguration {
 
@@ -22,6 +24,11 @@ public class TokenConfiguration {
     private String secret;
 
     public String generateToken(User user) {
+
+        log.info("Gerando token JWT para usuário email={} publicId={}",
+                user.getEmail(),
+                user.getPublicId());
+
         Algorithm algorithm = Algorithm.HMAC256(secret);
 
         return JWT.create()
@@ -44,7 +51,11 @@ public class TokenConfiguration {
                     .publicId(UUID.fromString(decoded.getClaim("publicId").asString()))
                     .role(UserRole.valueOf(decoded.getClaim("role").asString()))
                     .build());
+        } catch (TokenExpiredException ex) {
+            log.warn("Token JWT expirado");
+            return Optional.empty();
         } catch (JWTVerificationException ex) {
+            log.warn("Falha na validação do token JWT: {}", ex.getMessage());
             return Optional.empty();
         }
     }

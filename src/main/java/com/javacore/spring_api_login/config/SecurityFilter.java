@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,6 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class SecurityFilter extends OncePerRequestFilter {
@@ -30,8 +32,10 @@ public class SecurityFilter extends OncePerRequestFilter {
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
 
+            log.debug("Token JWT encontrado path={}", request.getRequestURI());
+
             tokenConfiguration.validateToken(token)
-                    .ifPresent(data -> {
+                    .ifPresentOrElse(data -> {
                         if (SecurityContextHolder.getContext().getAuthentication() == null) {
                             var authorities = data.role()
                                     .getAuthorities()
@@ -49,6 +53,8 @@ public class SecurityFilter extends OncePerRequestFilter {
                                     .getContext()
                                     .setAuthentication(authentication);
                         }
+                    }, () -> {
+                        log.warn("Token JWT inválido path={}", request.getRequestURI());
                     });
         }
         filterChain.doFilter(request, response);

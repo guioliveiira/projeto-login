@@ -13,11 +13,13 @@ import com.javacore.spring_api_login.exception.custom.BusinessException;
 import com.javacore.spring_api_login.exception.custom.InvalidCredentialsException;
 import com.javacore.spring_api_login.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -30,6 +32,8 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginUserResponse login(LoginUserRequest request) {
 
+        log.debug("Tentativa de login email={}", request.email());
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.email(),
@@ -38,19 +42,27 @@ public class AuthServiceImpl implements AuthService {
         );
 
         User user = userRepository.findByEmailAndDeletedFalse(request.email())
-                .orElseThrow(() -> new InvalidCredentialsException("Email ou senha incorretos"));
+                .orElseThrow(() -> {
+                    log.warn("Falha no login: Credenciais inválidas email={}", request.email());
+                    return new InvalidCredentialsException("Email ou senha incorretos");
+                });
 
         String token = tokenConfiguration.generateToken(user);
 
+        log.info("Login realizado com sucesso id={}", user.getPublicId());
         return new LoginUserResponse(token);
     }
 
     @Override
     public RegisterUserResponse register(RegisterUserRequest request) {
+
+        log.debug("Registrando usuário email={}", request.email());
+
         String normalizerName = NameNormalizer.normalizer(request.name());
         String normalizerEmail = EmailNormalizer.normalize(request.email());
 
         if (userRepository.existsByEmailAndDeletedFalse(normalizerEmail)) {
+            log.warn("Tentativa de registro com email já cadastrado email={}", normalizerEmail);
             throw new BusinessException("Email já foi cadastrado");
         }
 
@@ -62,6 +74,8 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         User savedUser = userRepository.save(user);
+
+        log.info("Usuário registrado com sucesso userId={}", savedUser.getPublicId());
 
         return new RegisterUserResponse(
                 savedUser.getPublicId(),

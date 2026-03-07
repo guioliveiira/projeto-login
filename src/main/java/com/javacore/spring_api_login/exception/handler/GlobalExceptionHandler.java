@@ -5,6 +5,7 @@ import com.javacore.spring_api_login.exception.custom.InvalidCredentialsExceptio
 import com.javacore.spring_api_login.exception.custom.ResourceNotFoundException;
 import com.javacore.spring_api_login.exception.response.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import java.util.List;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -23,6 +25,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleNotFoundExceptio(
             ResourceNotFoundException ex,
             HttpServletRequest request) {
+
+        log.warn("Recurso não encontrado path={} message={}",
+                request.getRequestURI(),
+                ex.getMessage());
+
 
         return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage(), null, request);
     }
@@ -32,6 +39,10 @@ public class GlobalExceptionHandler {
             BusinessException ex,
             HttpServletRequest request) {
 
+        log.warn("Erro de negócio path={} message={}",
+                request.getRequestURI(),
+                ex.getMessage());
+
         return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), null, request);
     }
 
@@ -39,6 +50,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleInvalidCredentialsException(
             InvalidCredentialsException ex,
             HttpServletRequest request) {
+
+        log.warn("Falha de autenticação path={} message={}",
+                request.getRequestURI(),
+                ex.getMessage());
+
         return buildErrorResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), null, request);
     }
 
@@ -52,6 +68,11 @@ public class GlobalExceptionHandler {
                 .stream()
                 .map(FieldError::getDefaultMessage)
                 .toList();
+
+        log.warn("Erro de validação path={} details={}",
+                request.getRequestURI(),
+                details);
+
         return buildErrorResponse(HttpStatus.BAD_REQUEST, "Erro de validação", details, request);
     }
 
@@ -65,12 +86,21 @@ public class GlobalExceptionHandler {
                 ex.getName(),
                 ex.getValue()
         );
+
+        log.warn("Tipo de parâmetro inválido path={} param={} value={}",
+                request.getRequestURI(),
+                ex.getName(),
+                ex.getValue());
+
         return buildErrorResponse(HttpStatus.BAD_REQUEST, message, null, request);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiErrorResponse> handleViolationException(
             HttpServletRequest request) {
+
+        log.warn("Violação de integridade no banco path={}", request.getRequestURI());
+
         return buildErrorResponse(HttpStatus.BAD_REQUEST, "Erro de violação", null, request);
     }
 
@@ -78,6 +108,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleGenericException(
             Exception ex,
             HttpServletRequest request) {
+
+        log.error("Erro inesperado path={}", request.getRequestURI(), ex);
+
         return buildErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "Ocorreu um erro interno",
