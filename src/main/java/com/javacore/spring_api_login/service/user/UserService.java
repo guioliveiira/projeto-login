@@ -17,4 +17,6 @@ public interface UserService {
     void delete(UUID publicId);
 
     RegisterUserResponse restore(UUID publicId);
+
+    RegisterUserResponse promoteToAdmin(UUID publicId);
 }

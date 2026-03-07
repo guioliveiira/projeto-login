@@ -5,6 +5,7 @@ import com.javacore.spring_api_login.domain.name.NameNormalizer;
 import com.javacore.spring_api_login.dtos.Request.RegisterUserUpdateRequest;
 import com.javacore.spring_api_login.dtos.Response.RegisterUserResponse;
 import com.javacore.spring_api_login.entity.User;
+import com.javacore.spring_api_login.entity.UserRole;
 import com.javacore.spring_api_login.exception.custom.BusinessException;
 import com.javacore.spring_api_login.exception.custom.ResourceNotFoundException;
 import com.javacore.spring_api_login.repository.UserRepository;
@@ -99,6 +100,19 @@ public class UserServiceImpl implements UserService {
 
         user.setDeleted(false);
         user.setDeteledAt(null);
+        return toResponse(user);
+    }
+
+    @Override
+    public RegisterUserResponse promoteToAdmin(UUID publicId) {
+        User user = userRepository.findByPublicIdAndDeletedFalse(publicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não foi encontrado"));
+
+        if (user.getRole().equals(UserRole.ADMIN)) {
+            throw new BusinessException("Usuário já é admin");
+        }
+
+        user.setRole(UserRole.ADMIN);
         return toResponse(user);
     }
 
